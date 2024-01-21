@@ -25,11 +25,11 @@ TRAIN_FLAGS="--lr 1e-4 --batch_size 128"
 ```
 Once you have setup your hyper-parameters, you can run an experiment like so:
 ```
-python scripts/image_train.py --data_dir path/to/images $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
+python train.py --data_dir path/to/datas $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
 ```
 You may also want to train in a distributed manner. In this case, run the same command with mpiexec:
 ```
-mpiexec -n $NUM_GPUS python scripts/image_train.py --data_dir path/to/images $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
+mpiexec -n $NUM_GPUS python train.py --data_dir path/to/datas $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
 ```
 When training in a distributed manner, you must manually divide the --batch_size argument by the number of ranks. In lieu of distributed training, you may use --microbatch 16 (or --microbatch 1 in extreme memory-limited cases) to reduce memory usage.
 
