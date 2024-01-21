@@ -2,3 +2,7 @@
 train/log_npy_mob
 reconstuction/log
 reconstuction/data/mod
+reconstuction/conf_mgt/__pycache__
+reconstuction/guided_diffusion/__pycache__
+reconstuction/utils/__pycache__
+train/guided_diffusion/__pycache__
