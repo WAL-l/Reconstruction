@@ -1,33 +1,36 @@
 # Train
 this is the train code implementation of “Seismic Data Reconstruction Based On Conditional Constraint Diffusion Model”
 
+#Installation
+run:
+```
+pip install -e .
+```
 # Training models
 
-Training diffusion models is described in the [parent repository](https://github.com/openai/improved-diffusion). We assume you have put training hyperparameters into a `TRAIN_FLAGS` variable, and classifier hyperparameters into a `CLASSIFIER_FLAGS` variable. Then you can run:
+## Preparing Data
 
+The training code reads npy data from a directory of data files. 
+
+For creating your own dataset, simply dump all of your datas into a directory with ".npy" extensions. 
+
+Simply pass --data_dir path/to/datas to the training script, and it will take care of the rest.
+
+## training
+To train your model, you should first decide some hyperparameters. We will split up our hyperparameters into three groups: model architecture, diffusion process, and training flags. Here are some reasonable defaults for a baseline:
 ```
-mpiexec -n N python scripts/classifier_train.py --data_dir path/to/imagenet $TRAIN_FLAGS $CLASSIFIER_FLAGS
+MODEL_FLAGS="--data_size 64 --num_channels 128 --num_res_blocks 3"
+DIFFUSION_FLAGS="--diffusion_steps 4000 --noise_schedule linear"
+TRAIN_FLAGS="--lr 1e-4 --batch_size 128"
 ```
-
-Make sure to divide the batch size in `TRAIN_FLAGS` by the number of MPI processes you are using.
-
-Here are flags for training the 128x128 classifier. You can modify these for training classifiers at other resolutions:
-
-```sh
-TRAIN_FLAGS="--iterations 300000 --anneal_lr True --batch_size 256 --lr 3e-4 --save_interval 10000 --weight_decay 0.05"
-CLASSIFIER_FLAGS="--data_size 128 --classifier_attention_resolutions 32,16,8 --classifier_depth 2 --classifier_width 128 --classifier_pool attention --classifier_resblock_updown True --classifier_use_scale_shift_norm True"
+Once you have setup your hyper-parameters, you can run an experiment like so:
 ```
-
-For sampling from a 128x128 classifier-guided model, 25 step DDIM:
-
-```sh
-MODEL_FLAGS="--attention_resolutions 32,16,8 --class_cond True --data_size 128 --learn_sigma True --num_channels 256 --num_heads 4 --num_res_blocks 2 --resblock_updown True --use_fp16 True --use_scale_shift_norm True"
-CLASSIFIER_FLAGS="--data_size 128 --classifier_attention_resolutions 32,16,8 --classifier_depth 2 --classifier_width 128 --classifier_pool attention --classifier_resblock_updown True --classifier_use_scale_shift_norm True --classifier_scale 1.0 --classifier_use_fp16 True"
-SAMPLE_FLAGS="--batch_size 4 --num_samples 50000 --timestep_respacing ddim25 --use_ddim True"
-mpiexec -n N python scripts/classifier_sample.py \
-    --model_path /path/to/model.pt \
-    --classifier_path path/to/classifier.pt \
-    $MODEL_FLAGS $CLASSIFIER_FLAGS $SAMPLE_FLAGS
+python scripts/image_train.py --data_dir path/to/images $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
 ```
+You may also want to train in a distributed manner. In this case, run the same command with mpiexec:
+```
+mpiexec -n $NUM_GPUS python scripts/image_train.py --data_dir path/to/images $MODEL_FLAGS $DIFFUSION_FLAGS $TRAIN_FLAGS
+```
+When training in a distributed manner, you must manually divide the --batch_size argument by the number of ranks. In lieu of distributed training, you may use --microbatch 16 (or --microbatch 1 in extreme memory-limited cases) to reduce memory usage.
 
-To sample for 250 timesteps without DDIM, replace `--timestep_respacing ddim25` to `--timestep_respacing 250`, and replace `--use_ddim True` with `--use_ddim False`.
+The logs and saved models will be written to a logging directory determined by the OPENAI_LOGDIR environment variable. If it is not set, then a temporary directory will be created in /tmp.

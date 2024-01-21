@@ -3,24 +3,18 @@ this is the reconstruction code implementation of “Seismic Data Reconstruction
 
 ## Setup
 
-### 1. Code
-
-```bash
-git clone https://github.com/WAL-l/seismic_reconstruction.git
-```
 
 ### 2. Environment
 ```bash
-pip install numpy torch blobfile tqdm pyYaml pillow    # e.g. torch 1.7.1+cu110.
+pip install numpy blobfile tqdm pyYaml pillow 
 ```
 
 ### 4. Run example
 ```bash
-python test.py --conf_path confs/example.yml
+python reconstruction.py --conf_path confs/reconstruction.yml
 ```
-Find the output in `./log/example/inpainted`
+Find the output in `./log`
 
-*Note: After refactoring the code, we did not reevaluate all experiments.*
 
 <br>
 
